@@ -14,7 +14,8 @@ export async function uploadFiles(formData: FormData) {
     const entries = Array.from(formData.entries()) as unknown as [string, File][];
     const uploadDir = '/app/data/uploads';
     for (const [key, value] of entries) {
-        if (path.extname((value).name) === '.md'
+        if (true
+            // path.extname((value).name) === '.md'
         ) {
             files.push(value);
         }
