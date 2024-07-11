@@ -1,0 +1,5 @@
+{
+	"dependencies": {
+		"rabbitmq-client": "^4.6.0"
+	}
+}

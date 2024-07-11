@@ -12,9 +12,6 @@ services:
       - nextjs_data:/app/data  # Only mount the data volume in production
     env_file:
       - .env
-    environment:
-      - NODE_ENV=production  # Default to production
-      - RABBITMQ_URL=amqp://rabbitmq:5672
     depends_on:
       - rabbitmq
 
@@ -23,19 +20,20 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    restart: unless-stopped
 
   python-service:
     build:
       context: ./python_service
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "3001:3001"
     volumes:
       - nextjs_data:/app/data
-    environment:
-      - RABBITMQ_URL=amqp://rabbitmq:5672
-    networks:
-      - default
-
+    env_file:
+      - .env
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
 volumes:
   nextjs_data:

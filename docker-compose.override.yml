@@ -2,11 +2,11 @@ version: '3'
 services:
   nextjs:
     build:
-      context: nextjs
-      dockerfile: nextjs/Dockerfile.dev
-      target: development  # Use development Dockerfile
+      context: ./nextjs
+      dockerfile: Dockerfile.dev
+      target: development
     volumes:
-      - .:/app  # Mount local directory for live reloading
+      - ./nextjs:/app  # Mount local directory for live reloading
       - /app/node_modules
     environment:
-      - NODE_ENV=development  # Set NODE_ENV to development
+      - NODE_ENV=development

@@ -1,0 +1,23 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      rabbitmq-client:
+        specifier: ^4.6.0
+        version: 4.6.0
+
+packages:
+
+  rabbitmq-client@4.6.0:
+    resolution: {integrity: sha512-RHt6Vz+nCzsMlSJ5HbMgxR1SMej1LtRVYCmbIWXfUhgeej3HshByQdVOirF195V3RVCRI3UHEec9PzgDQQtS8Q==}
+    engines: {node: '>=16'}
+
+snapshots:
+
+  rabbitmq-client@4.6.0: {}
