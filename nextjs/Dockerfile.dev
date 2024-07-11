@@ -1,0 +1,16 @@
+FROM node:18 as base
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package.json and pnpm-lock.yaml
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install
+
+# Copy the rest of the application code
+COPY . .
+
+FROM base as development
+ENV NODE_ENV=development
+CMD ["pnpm", "run", "dev"]

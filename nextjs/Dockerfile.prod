@@ -1,0 +1,17 @@
+FROM node:18 as base
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package.json and pnpm-lock.yaml
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+# Copy the rest of the application code and build
+COPY . .
+RUN pnpm run build
+
+FROM base as production
+ENV NODE_ENV=production
+CMD ["pnpm", "start"]
