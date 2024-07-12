@@ -14,6 +14,7 @@ services:
       - .env
     depends_on:
       - rabbitmq
+      - db
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -26,14 +27,26 @@ services:
     build:
       context: ./python_service
       dockerfile: Dockerfile
-    ports:
-      - "3001:3001"
     volumes:
       - nextjs_data:/app/data
     env_file:
       - .env
     depends_on:
       - rabbitmq
+      - db
     restart: unless-stopped
+
+  db:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
 volumes:
   nextjs_data:
+  pgdata:

@@ -1,40 +1,32 @@
-import pika
-import signal
-import sys
-
+from rabbitmq.rabbitmq import RabbitMQ
+from markdownembedding.markdownembedding import MarkdownEmbedding
+from dotenv import load_dotenv
+from openai import OpenAI
+import psycopg2
+import os
+import json
 def process_message(body):
     print("Processing message:", body)
+    print(body.decode('utf-8'))
+    message = json.loads(body.decode('utf-8'))
+    print(message)
+    conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+    openai_client = OpenAI()
+    markdownEmbedding = MarkdownEmbedding(conn, openai_client)
+    text = markdownEmbedding.read_markdown_file('/app/data/uploads/' + message['fileName'])
+    chunks = markdownEmbedding.split_markdown_by_headings(text)
+    markdownEmbedding.save_chunks_to_pgvector(chunks, message['user'])
 
-def callback(ch, method, properties, body):
-    try:
-        process_message(body)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-        print("Message acknowledged")
-    except Exception as e:
-        print("Error processing message:", e)
-        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
-
-def signal_handler(sig, frame):
-    print("Received signal to stop consuming. Closing connection...")
-    channel.stop_consuming()
-    connection.close()
-    print("Connection closed. Exiting...")
-    sys.exit(0)
 
 if __name__ == "__main__":
-    connection = pika.BlockingConnection(pika.URLParameters('amqp://rabbitmq:5672'))
-    channel = connection.channel()
-
-    queue_name = 'test_queue'
-    channel.queue_declare(queue=queue_name, durable=True)  # Ensure the queue exists and is durable
-    channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(queue=queue_name, on_message_callback=callback)
-
-    signal.signal(signal.SIGINT, signal_handler)
-    print(f"[*] Waiting for messages in {queue_name}. To exit press CTRL+C")
+    load_dotenv()
+    rabbitMQ = RabbitMQ("test_queue", process_message)
 
     try:
-        channel.start_consuming()
+        rabbitMQ.channel.start_consuming()
     except Exception as e:
         print("Error during consumption:", e)
-        connection.close()
+        rabbitMQ.connection.close()
+        print("Connection closed. Exiting...")
+
+
