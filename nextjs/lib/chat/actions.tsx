@@ -27,6 +27,7 @@ import { SpinnerMessage, UserMessage } from '@/components/message'
 import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
 import {spinner} from "@/components/spinner";
+import {addContextUsingRag} from "@/lib/chat/rag";
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
@@ -102,7 +103,9 @@ async function submitUserMessage(content: string) {
   'use server'
 
   const aiState = getMutableAIState<typeof AI>()
-
+  const session = await auth();
+  content = await addContextUsingRag(content, session?.user?.id as string);
+  console.log(content)
   aiState.update({
     ...aiState.get(),
     messages: [
@@ -122,7 +125,11 @@ async function submitUserMessage(content: string) {
     model: openai('gpt-3.5-turbo'),
     initial: <SpinnerMessage />,
     system: `\
-    You are a bot that assists users in writing code based on documentation they provide.`,
+    You are an assistant for answering coding questions that may be related to documentation.
+    I have found some relevant documentation that may help you. If you find that the documentation is related to the question,
+    try your best to utilize the documentation. If you find that the documentation is not related to the prompt,
+    please disregard it and answer as if no documentation was never included. Note that the prompt may not be a question. Every prompt will be in 
+    a json format where prompt is the key for the prompt and documentation is the key for the documentation.`,
     messages: [
       ...aiState.get().messages.map((message: any) => ({
         role: message.role,
@@ -209,7 +216,7 @@ export const AI = createAI<AIState, UIState>({
       const path = `/chat/${chatId}`
 
       const firstMessageContent = messages[0].content as string
-      const title = firstMessageContent.substring(0, 100)
+      const title = JSON.parse(firstMessageContent).prompt as string
 
       const chat: Chat = {
         id: chatId,
@@ -234,10 +241,13 @@ export const getUIStateFromAIState = (aiState: Chat) => {
       id: `${aiState.chatId}-${index}`,
       display:
        message.role === 'user' ? (
-          <UserMessage>{message.content as string}</UserMessage>
+          <UserMessage>{JSON.parse(message.content as string).prompt as string}</UserMessage>
         ) : message.role === 'assistant' &&
           typeof message.content === 'string' ? (
           <BotMessage content={message.content} />
         ) : null
     }))
 }
+
+
+

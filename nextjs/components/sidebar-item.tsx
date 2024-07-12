@@ -113,6 +113,7 @@ export function SidebarItem({ index, chat, children }: SidebarItemProps) {
                 </motion.span>
               ))
             ) : (
+              // <span>{chat.title}</span>
               <span>{chat.title}</span>
             )}
           </span>

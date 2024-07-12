@@ -50,6 +50,8 @@ class MarkdownEmbedding:
             for i, (heading, content) in enumerate(chunks):
                 sub_chunks = self.split_chunk_by_size(heading, content)
                 for j, sub_chunk in enumerate(sub_chunks):
+                    if not sub_chunk:
+                        continue
                     embedding = self.get_embedding(sub_chunk)
                     metadata = {
                         'heading': heading,
